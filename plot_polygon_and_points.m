@@ -47,7 +47,7 @@ for R = r0+step:step:r_finish    % для каждой дуги
     Value(strip) = sum(v(num));    strip = strip + 1; % суммируем величины 
                                 % и увеличиваем индекс на единицу, переходим к следующей полоске
     text(x0,y0+R-step,num2str(Value(strip-1)));
-    pause(0.1); % пауза для визуализации
+    %pause(0.1); % пауза для визуализации
 end
 end
 
