@@ -23,11 +23,29 @@ Value = plot_polygon_and_points(p,points,r0,r_finish,step,x0,y0);
 %path = build_path([70,74.5],x, Y, Values );   plot(path(:,1),path(:,2),'bo-');
 
 % find paths ( variant 2 with trees )
-build_tree([70, 72], x, Y, Values );
+Paths = build_tree([70, 72], x, Y, Values );    DrawPaths( Paths, x, Y, [1 0 0] );
+Paths = build_tree([74, 75], x, Y, Values );    DrawPaths( Paths, x, Y, [0 1 0] );
+Paths = build_tree([76, 74], x, Y, Values );    DrawPaths( Paths, x, Y, [0 0 1] );
 
 
 figure; plot(loops,Value,'k.-');xlabel('Радиус');ylabel('Сумма');grid;
 
+
+end
+
+function DrawPaths(Paths, x, Y, color)
+
+for k = 1:length(Paths)
+    Path = cell2mat(Paths(k));
+    x_idx = Path(:,1); 
+    y_idx = Path(:,2);
+
+    xx = x(x_idx);
+    yy = Y(x_idx,y_idx);
+    yy = yy(1,:);
+    plot(xx,yy,'Color',color,'Marker','o');
+
+end
 
 end
 
@@ -39,41 +57,63 @@ for k = 1:length( x_idx )
     Paths(1) = {[x_idx(k) y_idx(k)]};
 end
 
-stoppedPaths = [];
-for r = 1:100
-        L = length(Paths);   
+for r = 1:30
+    L = length(Paths); 
+    isStop = 1;
     for k = 1:L
-        if( isempty(find(stoppedPaths == k)) )
-            indices = cell2mat(Paths(k));
-            x_idx = indices(:,1);
-            y_idx = indices(:,2);
-            [x_idx_new,y_idx_new] = findMaxPointsNear( x_idx(end),y_idx(end), Values );
-            if( length(x_idx_new) == 1 && x_idx(end) == x_idx_new && x_idx(end-1) == x_idx_new && y_idx(end) == y_idx_new && y_idx(end-1) == y_idx_new )
-                stoppedPaths = [stoppedPaths k];
-            else
 
-                Paths(k) = {[[x_idx;x_idx_new(1)] [y_idx;y_idx_new(1)] ]};           
-                try delete(pp); catch; end
-                P = cell2mat(Paths(k));x_idx_ = P(:,1); y_idx_ = P(:,2);xx = x(x_idx_);yy = Y(x_idx_,y_idx_);yy = yy(1,:);pp = plot(xx,yy,'bx-');            
-                for j = 1:length(x_idx_new)-1
-                   
-                    Paths(end+1) = {[[x_idx;x_idx_new(j+1)] [y_idx;y_idx_new(j+1)] ]};
-                    delete(pp); P = cell2mat(Paths(end));x_idx_ = P(:,1); y_idx_ = P(:,2);xx = x(x_idx_);yy = Y(x_idx_,y_idx_);yy = yy(1,:);pp = plot(xx,yy,'bx-');
+        indices = cell2mat(Paths(k));
+
+        x_idx = indices(:,1);            y_idx = indices(:,2);
+
+        [x_idx_new,y_idx_new] = findMaxPointsNear( x_idx(end),y_idx(end), Values );
+        [x_idx_new,y_idx_new] = RemoveSameIndices( Paths, x_idx_new, y_idx_new );
+        
+        for m3 = 1:length(x_idx_new)
+            if x_idx_new(m3) > length(x) 
+                x_idx_new(m3) = x_idx_new(m3) - length(x);
+            end
+        end
+        for m3 = 1:length(y_idx_new)
+            if y_idx_new(m3) > size(Y',1) 
+                y_idx_new(m3) = y_idx_new(m3) - size(Y',1);
+            end
+        end        
+        
+        
+        if ( ~isempty(x_idx_new) )
+            isStop = 0;
+        end
+
+        if ~isempty(x_idx_new)
+            Paths(k) = {[[x_idx;x_idx_new(1)] [y_idx;y_idx_new(1)] ]};           
+        end
+        for j = 1:length(x_idx_new)-1
+            Paths(end+1) = {[[x_idx;x_idx_new(j+1)] [y_idx;y_idx_new(j+1)] ]};
+        end
+    end
+    if isStop 
+       break; 
+    end
+end
+
+end
+
+function [x_idx_new, y_idx_new] = RemoveSameIndices( Paths, x_idx_new, y_idx_new )
+    for k = 1:length(Paths)
+        indices = cell2mat(Paths(k));
+        x_idx = indices(:,1);
+        y_idx = indices(:,2);
+        for m = 1:length(x_idx)
+           
+            for m2 = length(x_idx_new):-1:1
+                if x_idx_new(m2) == x_idx(m) && y_idx_new(m2) == y_idx(m)
+                    x_idx_new(m2) = [];
+                    y_idx_new(m2) = [];
                 end
             end
         end
     end
-    for k = 1:length(Paths)
-        Path = cell2mat(Paths(k));
-        x_idx = Path(:,1); 
-        y_idx = Path(:,2);
-        xx = x(x_idx);
-        yy = Y(x_idx,y_idx);
-        yy = yy(1,:);
-        plot(xx,yy,'ro-');
-    end
-end
-
 end
 
 function [x_idx,y_idx] = findMaxPointsNear(x_idx,y_idx,Values)
@@ -91,6 +131,7 @@ d_y_idx = col + (r*2+1 - size(current_values_matrix,2))-r-1;
 
 x_idx = x_idx + d_x_idx;
 y_idx = y_idx + d_y_idx;
+
 end
 
 
