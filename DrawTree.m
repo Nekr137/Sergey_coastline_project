@@ -10,7 +10,7 @@ for k = 1:length(Paths)
     xx = x(x_idx);
     yy = Y(x_idx,y_idx);
     yy = yy(1,:);
-    plot(xx,yy,'Color',color,'Marker','o','LineWidth',3);
+    plot(xx,yy,'Color',color,'Marker','o','LineWidth',1);
     catch
     end
 
