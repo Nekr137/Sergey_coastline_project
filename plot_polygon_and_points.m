@@ -1,6 +1,6 @@
 function Value = plot_polygon_and_points(pln,pts,r0,r_finish,step,x0,y0)
 p = pts(:,1:2);
-figure;     hold on;    %plot(p(:,1),p(:,2),'b.')
+figure(1);  
 xlabel('Долгота');
 ylabel('Широта');
 draw_circles(x0,y0,r0,r_finish,step);

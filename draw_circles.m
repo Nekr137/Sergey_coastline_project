@@ -6,7 +6,9 @@ plotCircle = @(xc, yc, R) plot(xc + R * cos(0:0.001:2*pi), ...
                                 'LineWidth',0.1);
 
 % рисуем много кругов в цикле
+hold off
 for st = r0:step:r_finish
     plotCircle(x0,y0,st)
+    hold on;
 end
 end
